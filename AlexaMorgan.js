@@ -1,5 +1,5 @@
 'use strict';
-
+var https = require('https')
 /**
  * This sample demonstrates a simple skill built with the Amazon Alexa Skills Kit.
  * The Intent Schema, Custom Slots, and Sample Utterances for this skill, as well as
@@ -121,7 +121,7 @@ function setSSNInSession(intent, session, callback) {
         
 		sessionAttributes.ssn = myssnVal;
         if(sessionAttributes.pin){
-			speechOutput = 'I know you. You can ask me what is my name ?';
+			speechOutput = 'I got your SSN and pin. Now we can start with transactions with Stock Plan connect. You can ask me what is my name ?';
 			repromptText = "do you know me";
 		}else {
 			speechOutput = 'I got your SSN. Please tell me your 4 digit pin by saying my pin is ?';
@@ -164,7 +164,7 @@ function setPINInSession(intent, session, callback) {
         
         sessionAttributes.pin = mypinVal;
         if(sessionAttributes.ssn){
-			speechOutput = 'I know you. You can ask me what is my name ?';
+			speechOutput = 'I got your SSN and pin. Now we can start with transactions with Stock Plan connect. You can ask me what is my name ?';
 			repromptText = "do you know me";
 		}else {
 			speechOutput = 'I got your pin. Please tell me your ssn by saying my ssn is ?';
@@ -200,7 +200,19 @@ function whoAmI(intent, session, callback) {
 
     if (ssnVal && pinVal) {
 		let name ;
-		
+		var endpoint = "https://sandeephoodaiot.appspot.com/Morgan?ssn="+ssnVal+"&pin="+pinVal // ENDPOINT GOES HERE
+			
+            var body = ""
+            https.get(endpoint, (response) => {
+              response.on('data', (chunk) => { body += chunk })
+              response.on('end', () => {
+                 shouldEndSession = true;
+                var speechOutput = body
+                callback(sessionAttributes,
+				buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
+              })
+            })
+		/*
 		if (ssnVal == '123' && pinVal == '1234') {
 			speechOutput = " Welcome Sandeep, It was nice talking to you.";
 		}
@@ -209,20 +221,23 @@ function whoAmI(intent, session, callback) {
 		}
 		if (ssnVal == '789' && pinVal == '1234') {
 			speechOutput = " Welcome Bhavin, I hope you enjoyed your recent chandigarh trip.";
-		}
+		}*/
         
-        shouldEndSession = true;
+       
     } else if(!ssnVal) {
         speechOutput = "Before we proceed further I want to know your ssn, you can say, my ssn is " ;
+		callback(sessionAttributes,
+         buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
     } else {
 		speechOutput = "Before we proceed further I want to know your pin, my pin is " ;
+		callback(sessionAttributes,
+         buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
 	}
 
     // Setting repromptText to null signifies that we do not want to reprompt the user.
     // If the user does not respond or says something that is not understood, the session
     // will end.
-    callback(sessionAttributes,
-         buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
+    
 }
 function noIntent(intent, session, callback) {
 	let speechOutput = 'Morgan Stanley could not hear you properly. Please say that again.';
