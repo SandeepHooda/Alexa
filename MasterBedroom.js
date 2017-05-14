@@ -63,13 +63,24 @@ exports.handler = (event, context) => {
 		
 		let accessToken = event.session.user.accessToken;
 		
-		var userDetailUrl = "https://oauth-sandeep.appspot.com/GitHub/GetUserViaToken?access_token="+accessToken;
+		let userDetailUrl = "https://oauth-sandeep.appspot.com/GitHub/GetUserViaToken";
+		if (accessToken && accessToken != "null"){
+			userDetailUrl += "?access_token="+accessToken;
+		}
+		 
 		let userDetailResponse = "";
 		https.get(userDetailUrl, (response) => {
 				  response.on('data', (chunk) => { userDetailResponse += chunk })
 				  response.on('end', () => {
-				
-					let userDetails = JSON.parse(userDetailResponse);
+				    
+					let userDetails = null;
+					try {
+						userDetails = JSON.parse(userDetailResponse);
+					}
+					catch(err) {
+						console.log(userDetailResponse);
+					}
+					
 					let name = "";
 					if (userDetails && userDetails.name){
 						name = userDetails.name;
