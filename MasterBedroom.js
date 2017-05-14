@@ -23,6 +23,8 @@ exports.handler = (event, context) => {
         break;
 
       case "IntentRequest":
+	   let accessToken = event.session.user.accessToken;
+	   
         // Intent Request
         console.log("INTENT REQUEST "+event.request.intent.name)
 		
@@ -59,33 +61,54 @@ exports.handler = (event, context) => {
 			}
 		}
 		
-		if (understood){
-			var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?collection=bedRoom&"+applianceName+"="+applianceAction // ENDPOINT GOES HERE
-				var body = ""
-				https.get(endpoint, (response) => {
-				  response.on('data', (chunk) => { body += chunk })
+		let accessToken = event.session.user.accessToken;
+		
+		var userDetailUrl = "https://oauth-sandeep.appspot.com/GitHub/GetUserViaToken?access_token="+accessToken;
+		let userDetailResponse = "";
+		https.get(userDetailUrl, (response) => {
+				  response.on('data', (chunk) => { userDetailResponse += chunk })
 				  response.on('end', () => {
+				
+					let userDetails = JSON.parse(userDetailResponse);
+					let name = "";
+					if (userDetails && userDetails.name){
+						name = userDetails.name;
+						name = name.substring(0, name.indexOf(' '));
+						
+					}
+					 
+					 
+				if (understood){
+					var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?collection=bedRoom&"+applianceName+"="+applianceAction // ENDPOINT GOES HERE
+						var body = ""
+						https.get(endpoint, (response) => {
+						  response.on('data', (chunk) => { body += chunk })
+						  response.on('end', () => {
+							
+							var textTosay = body
+							
+							context.succeed(
+							  generateResponse(
+								buildSpeechletResponse(name+" I am glad I could help you to turn "+applianceAction+ " your "+applianceName, true),
+								{}
+							  )
+							)
+						  })
+						})
 					
-					var textTosay = body
-					
+				}else {
 					context.succeed(
-					  generateResponse(
-						buildSpeechletResponse("I am glad I could help you to turn "+applianceAction+ " your "+applianceName, true),
-						{}
-					  )
-					)
+							  generateResponse(
+								buildSpeechletResponse(name+" I am sorry I didn't get that "+applianceActionOrignal +", "+applianceName+". You can say things like switch off lamp", false),
+								{}
+							  )
+							)
+				
+				}
+					
 				  })
 				})
-			
-		}else {
-			context.succeed(
-					  generateResponse(
-						buildSpeechletResponse(" I am sorry I didn't get that "+applianceActionOrignal +", "+applianceName+". You can say things like switch off lamp", false),
-						{}
-					  )
-					)
 		
-		}
 		
           
             
