@@ -67,7 +67,7 @@ exports.handler = (event, context) => {
 		 
 				if (understood){
 					//var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?collection=bedRoom&"+applianceName+"="+applianceAction; // ENDPOINT GOES HERE
-					var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?access_token="+accessToken+"&"+applianceName+"="+applianceAction; // ENDPOINT GOES HERE
+					var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?collection=bedRoom&access_token="+accessToken+"&"+applianceName+"="+applianceAction; // ENDPOINT GOES HERE
 						var body = "";
 						https.get(endpoint, (response) => {
 						  response.on('data', (chunk) => { body += chunk });
