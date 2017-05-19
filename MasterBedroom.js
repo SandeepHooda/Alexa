@@ -1,4 +1,4 @@
-var https = require('https')
+var https = require('https');
 
 exports.handler = (event, context) => {
 
@@ -6,27 +6,26 @@ exports.handler = (event, context) => {
 
     if (event.session.new) {
       // New Session
-      console.log("NEW SESSION")
+      console.log("NEW SESSION");
     }
 
     switch (event.request.type) {
 
       case "LaunchRequest":
         // Launch Request
-        console.log(`LAUNCH REQUEST`)
+        console.log(`LAUNCH REQUEST`);
         context.succeed(
           generateResponse(
             buildSpeechletResponse("Welcome to smart home. Please say commands like turn off light. ", false),
             {}
           )
-        )
+        );
         break;
 
       case "IntentRequest":
-	   let accessToken = event.session.user.accessToken;
 	   
         // Intent Request
-        console.log("INTENT REQUEST "+event.request.intent.name)
+        console.log("INTENT REQUEST "+event.request.intent.name);
 		
         switch(event.request.intent.name) {
         case "toggle":
@@ -50,7 +49,7 @@ exports.handler = (event, context) => {
 				 console.log("applianceName :" +applianceName +":");
 				if (applianceAction == "on" || applianceAction == "off"){
 				    if (applianceName == "light" || applianceName == "CFL" || applianceName == "bulb" || applianceName == "lamp"  ){
-				        applianceName = "light" 
+				        applianceName = "light" ;
 				    }
 					if(applianceName == "light" || applianceName == "fan" ){
 						understood = true;
@@ -63,62 +62,50 @@ exports.handler = (event, context) => {
 		
 		let accessToken = event.session.user.accessToken;
 		
-		let userDetailUrl = "https://oauth-sandeep.appspot.com/GitHub/GetUserViaToken";
+		
 		if (accessToken && accessToken != "null"){
-			userDetailUrl += "?access_token="+accessToken;
-		}
 		 
-		let userDetailResponse = "";
-		https.get(userDetailUrl, (response) => {
-				  response.on('data', (chunk) => { userDetailResponse += chunk })
-				  response.on('end', () => {
-				    
-					let userDetails = null;
-					try {
-						userDetails = JSON.parse(userDetailResponse);
-					}
-					catch(err) {
-						console.log(userDetailResponse);
-					}
-					
-					let name = "";
-					if (userDetails && userDetails.name){
-						name = userDetails.name;
-						name = name.substring(0, name.indexOf(' '));
-						
-					}
-					 
-					 
 				if (understood){
-					var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?collection=bedRoom&"+applianceName+"="+applianceAction // ENDPOINT GOES HERE
-						var body = ""
+					//var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?collection=bedRoom&"+applianceName+"="+applianceAction; // ENDPOINT GOES HERE
+					var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?access_token="+accessToken+"&"+applianceName+"="+applianceAction; // ENDPOINT GOES HERE
+						var body = "";
 						https.get(endpoint, (response) => {
-						  response.on('data', (chunk) => { body += chunk })
+						  response.on('data', (chunk) => { body += chunk });
 						  response.on('end', () => {
 							
-							var textTosay = body
+							let response = JSON.parse(body);
 							
 							context.succeed(
 							  generateResponse(
-								buildSpeechletResponse(name+" I am glad I could help you to turn "+applianceAction+ " your "+applianceName, true),
+								buildSpeechletResponse(response.userName+" I am glad I could help you to turn "+applianceAction+ " your "+applianceName, true),
 								{}
 							  )
-							)
-						  })
-						})
+							);
+						  });
+						});
 					
 				}else {
 					context.succeed(
 							  generateResponse(
-								buildSpeechletResponse(name+" I am sorry I didn't get that "+applianceActionOrignal +", "+applianceName+". You can say things like switch off lamp", false),
+								buildSpeechletResponse(" I am sorry I didn't get that "+applianceActionOrignal +", "+applianceName+". You can say things like switch off lamp", false),
 								{}
 							  )
-							)
+							);
 				
 				}
 					
-				  })
-				})
+				
+		}else { //Account is not linked, accessToken is null
+			context.succeed(
+							  generateResponse(
+								buildSpeechletResponseWithCard( true),
+								{}
+							  )
+							);
+			
+		}
+		 
+		
 		
 		
           
@@ -133,7 +120,7 @@ exports.handler = (event, context) => {
             buildSpeechletResponse("You can say things like switch on bulb", false),
             {}
           )
-        ) 	
+        ); 	
 		break; 
       case "AMAZON.StopIntent" :
 	  case "AMAZON.CancelIntent" :
@@ -142,7 +129,7 @@ exports.handler = (event, context) => {
             buildSpeechletResponse("Ok good bye.", true),
             {}
           )
-        ) 	
+        ); 	
 		break; 		
 
           default:
@@ -150,24 +137,24 @@ exports.handler = (event, context) => {
           generateResponse(
             buildSpeechletResponse("I am sorry I didn't get that. You can say things like switch off fan.", false),
             {}
-          ))
+          ));
         }
 
         break;
 
       case "SessionEndedRequest":
         // Session Ended Request
-        console.log(`SESSION ENDED REQUEST`)
+        console.log(`SESSION ENDED REQUEST`);
         break;
 	
       default:
-        context.fail(`INVALID REQUEST TYPE: ${event.request.type}`)
+        context.fail(`INVALID REQUEST TYPE: ${event.request.type}`);
 
     }
 
-  } catch(error) { context.fail(`Exception: ${error}`) }
+  } catch(error) { context.fail(`Exception: ${error}`); }
 
-}
+};
 
 // Helpers
 buildSpeechletResponse = (outputText, shouldEndSession) => {
@@ -178,9 +165,26 @@ buildSpeechletResponse = (outputText, shouldEndSession) => {
       text: outputText
     },
     shouldEndSession: shouldEndSession
-  }
+  };
 
-}
+};
+buildSpeechletResponseWithCard = ( shouldEndSession) => {
+
+
+
+  return {
+        outputSpeech: {
+            type: 'PlainText',
+            text: 'Please go to your Alexa app and link your account.',
+        },
+        card: {
+            type: 'LinkAccount'
+            
+        },
+        shouldEndSession:shouldEndSession
+    };
+
+};
 
 generateResponse = (speechletResponse, sessionAttributes) => {
 
@@ -188,6 +192,6 @@ generateResponse = (speechletResponse, sessionAttributes) => {
     version: "1.0",
     sessionAttributes: sessionAttributes,
     response: speechletResponse
-  }
+  };
 
-}
+};
