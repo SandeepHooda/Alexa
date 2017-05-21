@@ -37,10 +37,10 @@ exports.handler = (event, context) => {
 		let applianceActionOrignal = null;
 		let understood = false;
 		if(appliance){
-			applianceName = appliance.value.trim();
+			applianceName = appliance.value.trim().toLowerCase();
 			if(action){
 				
-				applianceAction = action.value.trim();
+				applianceAction = action.value.trim().toLowerCase();
 				applianceActionOrignal = applianceAction;
 				applianceAction = applianceAction.replace("turn", "");
 				applianceAction = applianceAction.replace("switch", "");
@@ -51,7 +51,7 @@ exports.handler = (event, context) => {
 				    if (applianceName == "light" || applianceName == "CFL" || applianceName == "bulb" || applianceName == "lamp"  ){
 				        applianceName = "light" ;
 				    }
-					if(applianceName == "light" || applianceName == "fan" ){
+					if(applianceName == "light" || applianceName == "fan" || applianceName == "everything" ){
 						understood = true;
 					}
 				}
@@ -74,10 +74,14 @@ exports.handler = (event, context) => {
 						  response.on('end', () => {
 							
 							let response = JSON.parse(body);
-							
+							let your = " your ";
+							if (applianceName == "everything") {
+								   your = " ";
+							 }
 							context.succeed(
 							  generateResponse(
-								buildSpeechletResponse(response.userName+" I am glad I could help you to turn "+applianceAction+ " your "+applianceName, true),
+							   
+								buildSpeechletResponse(response.userName+" I am glad I could help you to turn "+applianceAction+ your +applianceName, true),
 								{}
 							  )
 							);
