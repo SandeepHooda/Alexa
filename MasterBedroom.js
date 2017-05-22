@@ -70,21 +70,36 @@ exports.handler = (event, context) => {
 					var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?collection=bedRoom&access_token="+accessToken+"&"+applianceName+"="+applianceAction; // ENDPOINT GOES HERE
 						var body = "";
 						https.get(endpoint, (response) => {
+							
 						  response.on('data', (chunk) => { body += chunk });
 						  response.on('end', () => {
-							
-							let response = JSON.parse(body);
-							let your = " your ";
-							if (applianceName == "everything") {
-								   your = " ";
-							 }
-							context.succeed(
+							console.log(body);
+							if (body.indexOf("Error: UNAUTHORIZED") >=0 || body.indexOf("Error: FORBIDDEN") >=0){
+								
+								context.succeed(
+								generateResponse(
+							   
+								buildSpeechletResponse("You need authorization to use the app. Please contact developer of the app at sonu.hooda@gmail.com for assitance", true),
+								{}
+							  )
+							);
+								
+							}else {
+								let response = JSON.parse(body);
+								let your = " your ";
+								if (applianceName == "everything") {
+									   your = " ";
+								 }
+								context.succeed(
 							  generateResponse(
 							   
 								buildSpeechletResponse(response.userName+" I am glad I could help you to turn "+applianceAction+ your +applianceName, true),
 								{}
 							  )
 							);
+							}
+							
+							
 						  });
 						});
 					
