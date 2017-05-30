@@ -66,8 +66,8 @@ exports.handler = (event, context) => {
 		if (accessToken && accessToken != "null"){
 		 
 				if (understood){
-					//var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?collection=bedRoom&"+applianceName+"="+applianceAction; // ENDPOINT GOES HERE
-					var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?collection=bedRoom&access_token="+accessToken+"&"+applianceName+"="+applianceAction; // ENDPOINT GOES HERE
+					//var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?source=alexa_lamda&collection=bedRoom&"+applianceName+"="+applianceAction; // ENDPOINT GOES HERE
+					var endpoint = "https://sandeephoodaiot.appspot.com/SetAppliance?source=alexa_lamda&collection=bedRoom&access_token="+accessToken+"&"+applianceName+"="+applianceAction; // ENDPOINT GOES HERE
 						var body = "";
 						https.get(endpoint, (response) => {
 							
